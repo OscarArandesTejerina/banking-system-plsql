@@ -1,46 +1,61 @@
-# Heart Disease Classification (Python)
+# Banking System (Oracle SQL & PL/SQL)
 
-A Naive Bayes classifier implemented entirely from scratch in Python, with no machine-learning libraries, and applied to heart disease prediction from clinical data. The emphasis of the project is on the underlying probabilistic mechanics: estimating priors and likelihoods directly from data, combining categorical and continuous features in a single framework, and handling the practical issues of numerical stability and missing values.
+A small relational banking system built in Oracle SQL and PL/SQL. It covers the full flow of a simple bank: creating customers and accounts, and handling deposits, withdrawals, and transfers between accounts, with balance integrity, overdraft protection, and authorization checks enforced at the database level through triggers, functions, and stored procedures.
 
 ## Overview
 
-The classifier predicts a patient's disease category from a mix of clinical measurements, some categorical (such as chest-pain type and resting ECG results) and some continuous (such as age, cholesterol, and maximum heart rate). This mixture of feature types, together with missing values in the data, motivates the main design choices in the implementation.
+The system is built entirely inside the database. Business rules are enforced by triggers and procedures rather than application code, so the data stays consistent regardless of how it is accessed. It follows an **action-modeling** approach: the operations to withdraw, deposit, and transfer money are each represented by their own dedicated table.
 
-## Method
+## Tables
 
-The model is a Naive Bayes classifier built on Bayes' theorem and the conditional-independence assumption between features. Key implementation details:
+| Table | Purpose |
+|-------|---------|
+| `customer` | Bank customers, identified by a personal ID number, with login password |
+| `account_type` | Account categories and their current interest rate |
+| `interest_change` | History of interest-rate changes per account type |
+| `account` | Individual accounts with balance and creation date |
+| `account_owner` | Links customers to the accounts they own (many-to-many) |
+| `deposition` | Deposit transactions |
+| `withdrawal` | Withdrawal transactions |
+| `transfer` | Transfers between two accounts |
 
-- **Class priors** estimated from the training data with Laplace smoothing.
-- **Discrete features** modeled with Laplace-smoothed categorical distributions, so unseen category/class combinations never receive zero probability.
-- **Continuous features** modeled with class-conditional Gaussian distributions, with a small variance floor to avoid numerical issues.
-- **Log-space computation** — likelihoods are summed as log-probabilities rather than multiplied, preventing floating-point underflow.
-- **Native missing-value handling** — missing entries are skipped in the per-instance likelihood rather than imputed or dropped, so no records are discarded.
+## Features
 
-Prediction assigns each instance to the class with the highest sum of the log-prior and the observed log-likelihood terms.
+- **Password validation** – a trigger ensures every password is exactly six characters before insert or update.
+- **Automatic primary keys** – a shared sequence (`pk_seq`) supplies key values through per-table triggers.
+- **Authentication** – the `log_in` function validates a customer's ID and password.
+- **Authorization** – the `get_authority` function checks whether a customer may operate on a given account; used by both withdrawals and transfers.
+- **Balance integrity** – triggers automatically update account balances after every deposit, withdrawal, and transfer.
+- **Overdraft protection** – triggers block any withdrawal or transfer that exceeds the available balance.
+- **Stored procedures** – `do_new_customer`, `do_deposition`, `do_withdrawal`, and `do_transfer` provide a clean interface for the main operations.
 
-## Results
+## Setup
 
-| Dataset | Accuracy |
-|---------|----------|
-| Training set (80%) | 66.5% |
-| Test set (20%) | 63.9% |
+Run the scripts in order:
 
-The small gap between training and test accuracy indicates the model is not overfitting. The modest overall accuracy reflects the strong conditional-independence assumption, the Gaussian approximation for continuous features, a multi-class target, and a relatively small dataset. The goal of the project is a transparent, correct from-scratch implementation rather than maximizing predictive performance.
+1. `01_create_tables.sql` – tables and constraints
+2. `02_triggers_pk.sql` – sequence and primary-key triggers
+3. `03_functions.sql` – `log_in`, `get_balance`, `get_authority`
+4. `04_triggers_business.sql` – balance and overdraft triggers
+5. `05_procedures.sql` – stored procedures
+6. `06_seed_data.sql` – sample customers, account types, accounts, and owners
 
+> **Note:** the order matters — functions must exist before the triggers and procedures that call them.
 
-## Dataset
+## Testing
 
-Heart disease dataset with a mix of categorical and continuous clinical features and a one-hot encoded disease-category target. See the report for a full description of the features.
+The `tests/` folder contains scripts that exercise the system: a login test, an overdraft attempt, an unauthorized-access attempt, and successful deposits, withdrawals, and transfers, each followed by a balance check to confirm the result.
 
 ## Repository Contents
 
 ```
-naive-bayes-classifier/
+banking-system-plsql/
 ├── README.md
-├── naive_bayes.ipynb   # notebook: loads data, runs the classifier, shows results
-└── report.pdf          # Full write-up: model, derivation, and results
+├── bankingsystem.sql     # Full script: tables, triggers, functions, procedures, and test cases
+└── walkthrough.pdf       # Step-by-step walkthrough of the system's design and implementation   
+
 ```
 
 ## Tech
 
-Python · probabilistic modeling · classification (from scratch, no ML libraries)
+Oracle Database · SQL (DDL & DML) · PL/SQL (triggers, functions, stored procedures)
