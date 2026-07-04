@@ -52,7 +52,7 @@ The `tests/` folder contains scripts that exercise the system: a login test, an 
 banking-system-plsql/
 ├── README.md
 ├── bankingsystem.sql     # Full script: tables, triggers, functions, procedures, and test cases
-└── walkthrough.pdf        # Step-by-step walkthrough of the system's design and implementation   
+└── walkthrough.pdf       # Step-by-step walkthrough of the system's design and implementation   
 
 ```
 
