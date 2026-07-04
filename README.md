@@ -46,6 +46,16 @@ Run the scripts in order:
 
 The `tests/` folder contains scripts that exercise the system: a login test, an overdraft attempt, an unauthorized-access attempt, and successful deposits, withdrawals, and transfers, each followed by a balance check to confirm the result.
 
+## Repository Contents
+
+```
+banking-system-plsql/
+├── README.md
+├── bankingsystem.sql     # Full script: tables, triggers, functions, procedures, and test cases
+└── walkthrough.pdf        # Step-by-step walkthrough of the system's design and implementation   
+
+```
+
 ## Tech
 
 Oracle Database · SQL (DDL & DML) · PL/SQL (triggers, functions, stored procedures)
